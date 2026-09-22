@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Apex 4-Day Progressive Overload & Functional Tracker</title>
+
+  <!-- iOS PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Apex Training" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#020617" />
+
+  <!-- Embedded Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23090d16'/%3E%3Cpath d='M256 90 L380 400 L320 400 L292 330 L220 330 L192 400 L132 400 Z M256 180 L234 280 L278 280 Z' fill='%23fbbf24'/%3E%3C/svg%3E" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; margin: 0; 
+    }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1.5rem); }
+    .pt-safe { padding-top: env(safe-area-inset-top, 0.5rem); }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-28 pt-safe font-sans antialiased selection:bg-amber-400 selection:text-slate-950">
+
+  <!-- Sticky Header -->
+  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3">
+    <div class="max-w-xl mx-auto flex items-center justify-between gap-2">
+      <div class="min-w-0">
+        <div class="flex items-center gap-1.5">
+          <h1 class="text-base font-black tracking-wider text-amber-400 uppercase truncate">Apex System</h1>
+          <span id="phase-pill" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-400 border border-amber-400/30 whitespace-nowrap">Phase 1</span>
+        </div>
+        <p class="text-xs text-slate-400 font-medium truncate" id="cycle-label">Meso 1 • Week 1 (Rotation A)</p>
+      </div>
+
+      <div class="flex items-center gap-1.5 flex-shrink-0">
+        <!-- Add to Home Screen Button (iOS focus) -->
+        <button id="pwa-install-btn" onclick="openInstallModal()" class="flex items-center gap-1 bg-amber-400/10 hover:bg-amber-400/20 text-amber-400 text-xs px-2.5 py-1.5 rounded-lg border border-amber-400/30 font-semibold transition-all">
+          <span>📲</span> <span>Add to iPhone</span>
+        </button>
+
+        <!-- Rest Timer -->
+        <button id="timer-btn" class="bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 font-mono text-emerald-400 flex items-center gap-1 transition-colors">
+          <span>⏱</span><span id="timer-display">90s</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-xl mx-auto px-4 mt-4 space-y-4">
+
+    <!-- Accountability Card -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+      <div class="flex justify-between items-center text-xs">
+        <span class="font-semibold tracking-wider text-slate-400 uppercase">Master Adherence & Accountability</span>
+        <span class="text-amber-400 font-mono font-bold" id="adherence-pct">0% Completed</span>
+      </div>
+      <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+        <div id="adherence-bar" class="bg-amber-400 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+      <div class="flex justify-between items-center text-xs text-slate-400 pt-1">
+        <span id="phase-timeline-text">Phase 1: Overload (Sep '26 – Feb '27)</span>
+        <span id="target-rpe-badge" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[11px] font-mono border border-slate-700">RPE: 7</span>
+      </div>
+    </div>
+
+    <!-- Week Selector Bar -->
+    <div class="space-y-1.5">
+      <div class="flex items-center justify-between text-xs px-1">
+        <span class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Select Week (40 Total)</span>
+        <span id="month-badge" class="text-amber-400 text-[10px] font-mono">Sep 2026</span>
+      </div>
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none" id="week-selector">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- 4-Day Tabs -->
+    <div class="grid grid-cols-4 gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-slate-800" id="day-tabs">
+      <button onclick="switchDay(0)" class="day-tab py-2 text-xs font-bold rounded-lg transition-all" data-day="0">Day 1<br><span id="day-tab-0" class="text-[9px] font-normal block truncate">Upper</span></button>
+      <button onclick="switchDay(1)" class="day-tab py-2 text-xs font-bold rounded-lg transition-all" data-day="1">Day 2<br><span id="day-tab-1" class="text-[9px] font-normal block truncate">Lower</span></button>
+      <button onclick="switchDay(2)" class="day-tab py-2 text-xs font-bold rounded-lg transition-all" data-day="2">Day 3<br><span id="day-tab-2" class="text-[9px] font-normal block truncate">Upper</span></button>
+      <button onclick="switchDay(3)" class="day-tab py-2 text-xs font-bold rounded-lg transition-all" data-day="3">Day 4<br><span id="day-tab-3" class="text-[9px] font-normal block truncate">Lower</span></button>
+    </div>
+
+    <!-- Targeted Warm-up Protocol Box -->
+    <div class="bg-slate-900/80 border border-amber-400/20 rounded-2xl p-4 space-y-2">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-1.5">
+          <span class="text-amber-400 text-sm">🔥</span>
+          <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wider" id="warmup-title">Dynamic Warm-Up Protocol</h2>
+        </div>
+        <span class="text-[10px] text-slate-400 font-mono">5–8 mins</span>
+      </div>
+      <div id="warmup-list" class="space-y-1.5 text-xs text-slate-300">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- Exercise Workout Logs -->
+    <div id="workout-container" class="space-y-4">
+      <!-- Injected via JS -->
+    </div>
+
+    <!-- Completion Action Button -->
+    <button id="complete-btn" onclick="toggleWorkoutComplete()" class="w-full py-3.5 rounded-xl font-bold tracking-wide uppercase transition-all bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 active:scale-[0.99]">
+      Mark Workout Complete
+    </button>
+
+    <!-- Backup & Utility Controls -->
+    <div class="flex justify-between items-center text-[11px] text-slate-500 pt-4 border-t border-slate-800">
+      <button onclick="exportData()" class="hover:text-slate-300">Export Backup</button>
+      <label class="hover:text-slate-300 cursor-pointer">
+        Import Backup
+        <input type="file" id="import-file" class="hidden" onchange="importData(event)">
+      </label>
+      <button onclick="resetCurrentDay()" class="hover:text-red-400">Clear This Session</button>
+    </div>
+
+  </main>
+
+  <!-- iOS Add to Home Screen Instructions Modal -->
+  <div id="ios-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end justify-center pb-safe" onclick="closeInstallModal(event)">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-t-3xl p-6 text-slate-100 space-y-4 shadow-2xl relative" onclick="event.stopPropagation()">
+      <div class="w-10 h-1 bg-slate-700 rounded-full mx-auto"></div>
+      
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-slate-950 border border-amber-400/40 flex items-center justify-center text-amber-400 font-black text-xl flex-shrink-0">
+          A
+        </div>
+        <div>
+          <h3 class="font-black text-sm text-slate-100">Install Apex on iPhone</h3>
+          <p class="text-xs text-slate-400">Run edge-to-edge without the Safari address bar.</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 bg-slate-950/70 p-4 rounded-xl border border-slate-800 text-xs">
+        <div class="flex items-center gap-3">
+          <div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center font-bold text-amber-400">1</div>
+          <p>Tap the <span class="inline-flex items-center gap-1 font-bold text-slate-200">Share button <svg class="inline w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8m-4-6l-4-4m0 0L8 6m4-4v12"/></svg></span> in Safari's bottom bar.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center font-bold text-amber-400">2</div>
+          <p>Scroll down and select <span class="inline-flex items-center gap-1 font-bold text-slate-200">"Add to Home Screen" <svg class="inline w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8m-4-4h8"/></svg></span>.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center font-bold text-amber-400">3</div>
+          <p>Tap <span class="font-bold text-amber-400">"Add"</span> in the top-right corner.</p>
+        </div>
+      </div>
+
+      <button onclick="closeInstallModal()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider">
+        Got It
+      </button>
+
+      <div class="text-center text-[10px] text-slate-500 flex items-center justify-center gap-1 animate-bounce pt-1">
+        <span>↓ Look at Safari's bottom navigation bar</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       PROGRAM DESIGN: 3-WEEK ROTATIONS WITH DEDICATED SUPERSET MODELING
+       ========================================================================== */
+
+    // PHASE 1: HYPERTROPHY & OVERLOAD (WEEKS 1–23: SEP 2026 – FEB 2027)
+    const PHASE_1_ROTATIONS = {
+      // Rotation A: Hypertrophy & Supersets (Focused on Examples 1, 2, 3)
+      A: [
+        {
+          label: "Upper A (Lat & Shoulder Hypertrophy)",
+          warmup: [
+            "Dead hangs from pull-up bar (60s total, lat decompress)",
+            "Banded shoulder dislocates & pull-aparts (2 × 15)",
+            "Scapular pull-ups (2 × 8 reps with 2s apex hold)",
+            "World's Greatest Stretch with thoracic reach (5/side)"
+          ],
+          exercises: [
+            { name: "Pull-ups (AMRAP)", sets: 4, targetReps: "AMRAP", notes: "Full lat extension at bottom; drive elbows into ribcage.", alternatives: ["Neutral Grip Pull-ups", "Lat Pulldown"] },
+            { 
+              isSuperset: true,
+              name: "DB Incline Bench + T-Bar Row",
+              moveA: { name: "DB Incline Bench", targetReps: "10" },
+              moveB: { name: "T-Bar Row", targetReps: "10" },
+              sets: 3, 
+              notes: "No rest between A & B. Rest 90s after completing both movements.",
+              alternativesA: ["Barbell Incline Bench", "Incline Machine Press"],
+              alternativesB: ["Barbell Row", "Chest-Supported Row"]
+            },
+            { name: "Overhead Press (OHP)", sets: 3, targetReps: "8-10", notes: "Lock out overhead with strong glute & ab brace.", alternatives: ["DB Seated Shoulder Press", "Standing Arnold Press"] },
+            { 
+              isSuperset: true,
+              name: "Lateral Raises + Reverse Fly",
+              moveA: { name: "Lateral Raises", targetReps: "10-12" },
+              moveB: { name: "Reverse Fly", targetReps: "10-12" },
+              sets: 3, 
+              notes: "Strict control; pause at peak contraction on both.",
+              alternativesA: ["Cable Lateral Raises", "Incline DB Lateral Raise"],
+              alternativesB: ["Face Pulls", "Rear Delt Machine Flyes"]
+            },
+            { name: "Dips", sets: 3, targetReps: "10", notes: "Slight forward lean for lower chest/delt bias.", alternatives: ["Weighted Dips", "Close-Grip Push-ups"] }
+          ]
+        },
+        {
+          label: "Lower A (Quad Bias & Posterior Balance)",
+          warmup: [
+            "90/90 Hip mobility openers (60s each side)",
+            "Deep goblet squat hold with ankle prying (60s)",
+            "Walking lunges with overhead torso reach (10 reps)",
+            "Banded glute bridges (2 × 15 reps, 2s squeeze)"
+          ],
+          exercises: [
+            { name: "Bulgarian Split Squats", sets: 3, targetReps: "8/side", notes: "Front foot flat; descend straight down to isolate quad.", alternatives: ["Front Rack Reverse Lunges", "Dumbbell Step-ups"] },
+            { name: "Goblet Squats", sets: 3, targetReps: "12", notes: "Full depth below parallel; keep torso upright.", alternatives: ["Front Squats", "Heels-Elevated Hack Squats"] },
+            { name: "GHD / Hyperextensions", sets: 3, targetReps: "10-12", notes: "Hinge at hip; contract hamstrings and glutes at apex.", alternatives: ["45-Degree Back Extensions", "Good Mornings"] },
+            { name: "Heavy Farmer's Carry", sets: 3, targetReps: "50 paces", notes: "Heavy dumbbells; tall posture, ribs pulled down.", alternatives: ["Trap Bar Carry", "Single-Arm Suitcase Carry"] },
+            { name: "Landmine Rotations", sets: 3, targetReps: "10/side", notes: "Anti-rotational core stability; keep pelvis locked.", alternatives: ["Cable Woodchoppers", "Pallof Press Holds"] }
+          ]
+        },
+        {
+          label: "Upper B (Chest Power & Arm Density)",
+          warmup: [
+            "Cat-Cow into Child's Pose (10 slow cycles)",
+            "Band Y-T-W-L raises for rotator cuff (10 each)",
+            "Push-up to Downward Dog (8 reps with calf stretch)",
+            "Light DB Cuban Press / external rotations (2 × 10)"
+          ],
+          exercises: [
+            { name: "Barbell Bench Press", sets: 4, targetReps: "6-8", notes: "Arch upper back, lock shoulder blades back and down.", alternatives: ["DB Flat Bench Press", "Floor Press"] },
+            { name: "Single Arm DB Row", sets: 3, targetReps: "10/side", notes: "Pull dumbbell toward hip pocket to isolate lower lat.", alternatives: ["Meadows Row", "Chest-Supported DB Row"] },
+            { name: "Face Pulls", sets: 3, targetReps: "15", notes: "Pull rope high toward forehead; spread handles wide.", alternatives: ["Band Face Pulls", "Rear Delt Flyes"] },
+            { name: "EZ-Bar Curls (21s)", sets: 3, targetReps: "21", notes: "7 bottom half, 7 top half, 7 full range.", alternatives: ["Incline DB Curls", "Hammer Curls"] },
+            { name: "Decline Push-ups", sets: 3, targetReps: "12", notes: "Feet elevated 18-24\" on bench.", alternatives: ["Weighted Push-ups", "Cable Crossover Flyes"] }
+          ]
+        },
+        {
+          label: "Lower B (Posterior Power & Deadlift)",
+          warmup: [
+            "Hamstring sweeps & inchworms with push-up (6 reps)",
+            "Banded hip hinge / Good Mornings (2 × 15)",
+            "Bird-dogs with 2-second glute hold (8/side)",
+            "Cossack squats for adductor & hip depth (6/side)"
+          ],
+          exercises: [
+            { name: "Heavy Deadlift", sets: 5, targetReps: "5", notes: "Build intra-abdominal pressure, push floor away.", alternatives: ["Trap Bar Deadlift", "Deficit Deadlift"] },
+            { name: "Landmine Reverse Lunge", sets: 3, targetReps: "8/side", notes: "Step back deep; explode up through front heel.", alternatives: ["DB Reverse Lunges", "Bulgarian Split Squats"] },
+            { name: "Lying or Seated Leg Curls", sets: 3, targetReps: "10-12", notes: "Slow 3-second negative descent.", alternatives: ["Swiss Ball Hamstring Curls", "Nordic Curls"] },
+            { name: "Heavy DB / Barbell Shrugs", sets: 3, targetReps: "12", notes: "Shrug straight up, pause 2 seconds at peak contraction.", alternatives: ["Trap Bar Shrugs", "Kelso Shrugs"] }
+          ]
+        }
+      ],
+
+      // Rotation B: Heavy Strength & Low Reps (Focused on Examples 4 & 5)
+      B: [
+        {
+          label: "Upper A (Strict Strength & Vertical Pull)",
+          warmup: [
+            "Dead hangs (45s) + Scapular shrugs (12 reps)",
+            "Band pull-aparts + Face pulls (2 × 15 reps)",
+            "Light kettlebell bottoms-up press (8/side)",
+            "Thoracic spine foam roller extensions (10 passes)"
+          ],
+          exercises: [
+            { name: "Weighted Pull-ups", sets: 3, targetReps: "8", notes: "Add weight belt; strict chin above bar.", alternatives: ["Bodyweight AMRAP Pull-ups", "Close-Grip Chin-ups"] },
+            { name: "Military Press", sets: 4, targetReps: "6", notes: "Strict barbell press from clavicle to overhead lockout.", alternatives: ["Seated Overhead Dumbbell Press", "Push Press"] },
+            { name: "Single Arm DB Row", sets: 3, targetReps: "10/side", notes: "Heavy rowing with full scapular retraction.", alternatives: ["Kroc Rows", "T-Bar Rows"] },
+            { name: "Weighted Dips", sets: 3, targetReps: "8", notes: "Dip with weight belt, controlling bottom depth.", alternatives: ["Bodyweight Dips (AMRAP)", "Close-Grip Bench Press"] },
+            { name: "Face Pulls", sets: 3, targetReps: "15", notes: "High volume for rear delt and rotator cuff balance.", alternatives: ["Band Pull-aparts", "Rear Delt Machine Flyes"] }
+          ]
+        },
+        {
+          label: "Lower A (Unilateral Strength & Hinge)",
+          warmup: [
+            "Hip airplanes with support (6/side)",
+            "Ankle dorsiflexion knee-to-wall drives (10/side)",
+            "Pry goblet squat hold (60s)",
+            "Single-leg glute bridges (12/side)"
+          ],
+          exercises: [
+            { name: "Bulgarian Split Squats", sets: 3, targetReps: "5/side", notes: "Heavy load variation: lower reps, high intensity.", alternatives: ["Barbell Split Squats", "Deficit Reverse Lunges"] },
+            { name: "Heavy Deadlift", sets: 4, targetReps: "5", notes: "Controlled pulls, resetting between reps.", alternatives: ["Trap Bar Deadlift (Low Handle)", "Sumo Deadlift"] },
+            { name: "GHD / Hyperextensions", sets: 3, targetReps: "12", notes: "Hold dumbbell at chest for added loading.", alternatives: ["Good Mornings", "Single Leg RDL"] },
+            { name: "Landmine Rotations", sets: 3, targetReps: "10/side", notes: "Brace core against rotational torque.", alternatives: ["Pallof Press with Rotation", "Hanging Windshield Wipers"] }
+          ]
+        },
+        {
+          label: "Upper B (Incline Volume & Arm Hypertrophy)",
+          warmup: [
+            "Band dislocates + Overhead squats with PVC (12 reps)",
+            "Scapular push-ups (15 reps)",
+            "Prone Y & T raises on floor (10 reps each)",
+            "Light dumbbell biceps and triceps priming (15 reps)"
+          ],
+          exercises: [
+            { name: "DB Incline Bench", sets: 3, targetReps: "10", notes: "Set bench at 30 degrees; stretch chest deep.", alternatives: ["Barbell Incline Press", "Smith Machine Incline Press"] },
+            { name: "T-Bar Row", sets: 3, targetReps: "10", notes: "Chest supported or free barbell landmine.", alternatives: ["Barbell Bent-Over Row", "Seal Row"] },
+            { name: "Lateral Raises", sets: 4, targetReps: "12", notes: "2-second eccentric descent on each rep.", alternatives: ["Cable Side Lateral", "Leaning Dumbbell Lateral"] },
+            { name: "EZ-Bar Curls (Strict)", sets: 3, targetReps: "12", notes: "Strict posture against wall to prevent cheating.", alternatives: ["Spider Curls", "Hammer Curls"] },
+            { name: "Decline Push-ups", sets: 3, targetReps: "12", notes: "Elevate feet on 20\" box.", alternatives: ["Floor Dips", "Cable Decline Press"] }
+          ]
+        },
+        {
+          label: "Lower B (Leg Volume & Carries)",
+          warmup: [
+            "Banded lateral monster walks (20 paces each way)",
+            "Leg swings (front/back and lateral, 10/side)",
+            "Inchworms into hip openers (6 reps)",
+            "Bodyweight squats with pause (10 reps)"
+          ],
+          exercises: [
+            { name: "Landmine Reverse Lunge", sets: 3, targetReps: "8/side", notes: "Heavy loading using landmine sleeve.", alternatives: ["DB Walking Lunges", "Rear Foot Elevated Split Squat"] },
+            { name: "Goblet Squats", sets: 3, targetReps: "12", notes: "Heels slightly elevated on 5lb plates.", alternatives: ["Safety Bar Squat", "Leg Press"] },
+            { name: "Lying or Seated Leg Curls", sets: 3, targetReps: "10", notes: "Keep toes pulled toward shins (dorsiflexed).", alternatives: ["Dumbbell Leg Curl", "Glute Ham Raise"] },
+            { name: "Heavy Farmer's Carry", sets: 4, targetReps: "50 paces", notes: "Max grip endurance; walk smooth and steady.", alternatives: ["Trap Bar Carry", "Overhead / Rack Carry Combo"] },
+            { name: "Heavy DB Shrugs", sets: 3, targetReps: "12", notes: "Full trap squeeze at top; pause 2s.", alternatives: ["Barbell Behind-Back Shrug", "Snatch-Grip High Pull"] }
+          ]
+        }
+      ],
+
+      // Rotation C: Mixed Density & Unilateral Variation (Focused on Examples 5 & 6)
+      C: [
+        {
+          label: "Upper A (Incline Push & Horizontal Pull)",
+          warmup: [
+            "Dead hangs (60s total, active lat pull)",
+            "Band face pulls into external rotation (2 × 15)",
+            "Spiderman stretch with thoracic reach (6/side)",
+            "Light DB shoulder press (12 reps)"
+          ],
+          exercises: [
+            { name: "DB Incline Bench", sets: 4, targetReps: "8-10", notes: "Heavy load, controlled bottom stretch.", alternatives: ["Incline Hammer Strength Press", "Barbell Incline Press"] },
+            { name: "Pull-ups (AMRAP)", sets: 4, targetReps: "AMRAP", notes: "Test volume output compared to Rotation A.", alternatives: ["Neutral Grip Weighted Pull-ups", "Wide Grip Lat Pulldown"] },
+            { name: "Military Press", sets: 3, targetReps: "8", notes: "Clean drive up from upper chest.", alternatives: ["Standing DB Arnold Press", "Landmine Overhead Press"] },
+            { 
+              isSuperset: true,
+              name: "Lateral Raises + Reverse Fly",
+              moveA: { name: "Lateral Raises", targetReps: "12" },
+              moveB: { name: "Reverse Fly", targetReps: "12" },
+              sets: 3, 
+              notes: "Constant tension, no rest between raises and flyes.",
+              alternativesA: ["Cable Lateral Raises", "DB Y-Raises"],
+              alternativesB: ["Face Pulls", "Rear Delt Machine Flyes"]
+            },
+            { name: "Dips", sets: 3, targetReps: "AMRAP", notes: "Bodyweight burn out with full extension.", alternatives: ["Tricep Rope Pushdowns", "Diamond Push-ups"] }
+          ]
+        },
+        {
+          label: "Lower A (Unilateral Legs & Hinge Density)",
+          warmup: [
+            "Cossack squats (8/side)",
+            "Banded glute kickbacks (15/side)",
+            "Kneeling hip flexor stretch with side bend (45s/side)",
+            "Ankle mobility wall rocks (10/side)"
+          ],
+          exercises: [
+            { name: "Bulgarian Split Squats", sets: 3, targetReps: "8/side", notes: "Place back foot on bench, drive up through lead heel.", alternatives: ["Reverse Lunges", "Step-ups"] },
+            { name: "Landmine Reverse Lunge", sets: 3, targetReps: "8/side", notes: "Load opposite side of working leg for anti-lateral flexion.", alternatives: ["Cross-behind Curtsy Lunges", "Walking Lunges"] },
+            { name: "GHD / Hyperextensions", sets: 3, targetReps: "10", notes: "Keep spine neutral, drive with hamstrings and glutes.", alternatives: ["Barbell RDL", "Cable Pull-Throughs"] },
+            { name: "Heavy Farmer's Carry", sets: 3, targetReps: "60 paces", notes: "Focus on walking in a strict straight line without swaying.", alternatives: ["Offset Kettlebell Carry", "Trap Bar Carry"] },
+            { name: "Landmine Rotations", sets: 3, targetReps: "12/side", notes: "Accelerate bar across the body with core control.", alternatives: ["Medicine Ball Rotational Slams", "Russian Twists"] }
+          ]
+        },
+        {
+          label: "Upper B (Horizontal Strength & Arms)",
+          warmup: [
+            "Band dislocates + Scapular wall slides (12 reps)",
+            "Push-up to pike (8 reps)",
+            "Rotator cuff external rotations (15/side)",
+            "Light barbell rowing priming (10 reps)"
+          ],
+          exercises: [
+            { name: "Barbell Bench Press", sets: 4, targetReps: "8", notes: "Touch lower chest, drive back slightly toward eyes.", alternatives: ["DB Flat Bench Press", "Weighted Dips"] },
+            { name: "T-Bar Row", sets: 3, targetReps: "10", notes: "Overhand or parallel grip; pull with elbows.", alternatives: ["Single Arm DB Row", "Chest-Supported Row"] },
+            { name: "Face Pulls", sets: 3, targetReps: "15", notes: "Focus on lower traps and posterior delts.", alternatives: ["Band Pull-aparts", "Incline Prone Y-Raises"] },
+            { name: "EZ-Bar Curls (21s)", sets: 3, targetReps: "21", notes: "Peak pump: 7 low, 7 high, 7 full.", alternatives: ["Hammer Curls", "Spider Curls"] },
+            { name: "Decline Push-ups", sets: 3, targetReps: "AMRAP", notes: "Push until 1 rep before technical failure.", alternatives: ["Regular Push-ups", "Dips"] }
+          ]
+        },
+        {
+          label: "Lower B (Deadlift Strength & Posterior Finish)",
+          warmup: [
+            "Good Mornings with band (2 × 15 reps)",
+            "Hamstring sweep marches (10/side)",
+            "Bird-dogs with 2s hold (8/side)",
+            "Bodyweight deep squats (12 reps)"
+          ],
+          exercises: [
+            { name: "Heavy Deadlift", sets: 4, targetReps: "5", notes: "Crisp reps, no hitching at lockout.", alternatives: ["Trap Bar Deadlift", "Barbell Romanian Deadlift"] },
+            { name: "Lying or Seated Leg Curls", sets: 4, targetReps: "10", notes: "Pause 1 second at full knee flexion.", alternatives: ["Slider Leg Curls", "Single Leg DB Curls"] },
+            { name: "Heavy DB / Barbell Shrugs", sets: 3, targetReps: "12", notes: "Hold each rep for 2 seconds at top.", alternatives: ["Farmer's Shrugs", "Rack Pull Shrugs"] },
+            { name: "Goblet Squats", sets: 3, targetReps: "10", notes: "Slow 3-second descent, explosive stand.", alternatives: ["Front Squats", "Pause Squats"] }
+          ]
+        }
+      ],
+
+      // Deload Week (Weeks 4, 8, 12, 16, 20)
+      Deload: [
+        {
+          label: "Upper Deload (Joint Recovery & Blood Flow)",
+          warmup: ["Dead hang (60s)", "Band pull-aparts (2 × 20)", "World's Greatest Stretch (5/side)", "Scapular push-ups (15)"],
+          exercises: [
+            { name: "Pull-ups (AMRAP)", sets: 2, targetReps: "5-6 easy reps", notes: "Deload: Stop well short of failure (RPE 6).", alternatives: ["Lat Pulldowns"] },
+            { name: "DB Incline Bench", sets: 2, targetReps: "10", notes: "Use 60% of usual working weight.", alternatives: ["Push-ups"] },
+            { name: "T-Bar Row", sets: 2, targetReps: "10", notes: "Light blood flow, feel lats expand.", alternatives: ["Cable Row"] },
+            { name: "Lateral Raises", sets: 2, targetReps: "12", notes: "Light dumbbells, smooth tempo.", alternatives: ["Band Lateral Raise"] }
+          ]
+        },
+        {
+          label: "Lower Deload (Mobility & Active Recovery)",
+          warmup: ["90/90 Hip flow (2 mins)", "Pry squat hold (60s)", "Ankle rocks (10/side)", "Glute bridges (15 reps)"],
+          exercises: [
+            { name: "Goblet Squats", sets: 2, targetReps: "10", notes: "Light kettlebell, deep restorative range of motion.", alternatives: ["Air Squats"] },
+            { name: "GHD / Hyperextensions", sets: 2, targetReps: "10", notes: "Bodyweight only, decompress lower back.", alternatives: ["Bird-dogs"] },
+            { name: "Moderate Farmer's Carry", sets: 2, targetReps: "40 paces", notes: "Focus on relaxed breathing and posture.", alternatives: ["Suitcase Carry"] }
+          ]
+        },
+        {
+          label: "Upper Deload (Rotator Cuff & Posture)",
+          warmup: ["Cat-Cow (10 cycles)", "Band YTWLs (10 each)", "Downward Dog (60s)", "Light arm swings"],
+          exercises: [
+            { name: "Barbell Bench Press", sets: 2, targetReps: "8", notes: "Use 50-60% normal load.", alternatives: ["DB Bench Press"] },
+            { name: "Single Arm DB Row", sets: 2, targetReps: "10", notes: "Light weight, mind-muscle connection.", alternatives: ["Band Rows"] },
+            { name: "Face Pulls", sets: 2, targetReps: "15", notes: "Light band or cable.", alternatives: ["Rear Delt Flyes"] }
+          ]
+        },
+        {
+          label: "Lower Deload (Hinge & Spine Decompression)",
+          warmup: ["Hamstring sweeps (10/side)", "Banded hip hinges (15 reps)", "Dead hang (60s)", "Cossack squats (6/side)"],
+          exercises: [
+            { name: "Romanian Deadlift (Light)", sets: 2, targetReps: "8", notes: "Light dumbbells, stretch hamstrings.", alternatives: ["Good Mornings"] },
+            { name: "Lying or Seated Leg Curls", sets: 2, targetReps: "10", notes: "Light weight, full range.", alternatives: ["Glute Bridges"] }
+          ]
+        }
+      ]
+    };
+
+    // PHASE 2: FUNCTIONAL FITNESS, POWER & CAPACITY (WEEKS 24–40: MAR 2027 – JUN 2027)
+    const PHASE_2_ROTATIONS = {
+      // Rotation A: Rotational Power & Engine
+      A: [
+        {
+          label: "Functional Upper & Rotational Power",
+          warmup: ["Band dislocates + Scap push-ups (2 × 12)", "Thoracic windmills (6/side)", "Medicine ball slams (2 × 6)", "Dead hangs (45s)"],
+          exercises: [
+            { name: "Dynamic / Weighted Pull-ups", sets: 4, targetReps: "6-8", notes: "Explosive pull up, 2s negative.", alternatives: ["Bodyweight Pull-ups", "Kipping/Chest-to-Bar"] },
+            { name: "Landmine Thrusters", sets: 4, targetReps: "8/side", notes: "Squat into explosive single-arm overhead press.", alternatives: ["DB Thrusters", "Push Press"] },
+            { name: "Renegade Row + Push-up Combo", sets: 3, targetReps: "8 combos", notes: "Push-up, row left, row right = 1 rep.", alternatives: ["Plank DB Rows", "Bear Crawl Row"] },
+            { name: "Lateral DB Raises to Overhead", sets: 3, targetReps: "12", notes: "Arc completely overhead to engage upper traps & serratus.", alternatives: ["Kettlebell Halos", "Landmine Lateral Arc"] },
+            { name: "Hanging Knee/Toes to Bar", sets: 3, targetReps: "12", notes: "Controlled compression without swinging.", alternatives: ["Ab Wheel Rollouts", "V-Ups"] }
+          ]
+        },
+        {
+          label: "Functional Lower & Unilateral Balance",
+          warmup: ["Deep squat with reach (8 reps)", "Single-leg hip airplanes (6/side)", "Skater hops with stick (8/side)", "Ankle wall drives (10/side)"],
+          exercises: [
+            { name: "Bulgarian Split Squats (Deficit)", sets: 4, targetReps: "6-8/side", notes: "Front foot on 2\" bumper plate for extra mobility depth.", alternatives: ["DB Step-ups (High Box)", "Airborne Squats"] },
+            { name: "KB / DB Power Swings", sets: 4, targetReps: "15", notes: "Violent hip hinge snap.", alternatives: ["Landmine Explosive Clean", "Broad Jumps"] },
+            { name: "Walking Lunges w/ Front Rack DBs", sets: 3, targetReps: "20 steps", notes: "Upright torso; high core demand.", alternatives: ["Overhead Walking Lunges", "Reverse Lunges"] },
+            { name: "Suitcase Carries (Single Arm)", sets: 3, targetReps: "40 paces/side", notes: "Keep shoulders completely level.", alternatives: ["Waiter's Carry (Overhead)", "Offset Carry"] },
+            { name: "GHD / Nordic Hamstring Curls", sets: 3, targetReps: "8-10", notes: "High eccentric hamstring strength.", alternatives: ["Swiss Ball Curls", "Slider Leg Curls"] }
+          ]
+        },
+        {
+          label: "Push-Pull Density & Conditioning",
+          warmup: ["Bear crawls (30 paces)", "Band pull-aparts + Face pulls (2 × 15)", "Downward dog to cobra (6 reps)", "Jump rope (90s)"],
+          exercises: [
+            { 
+              isSuperset: true,
+              name: "DB Incline Bench + Neutral Grip Pull-up",
+              moveA: { name: "DB Incline Bench", targetReps: "8-10" },
+              moveB: { name: "Neutral Grip Pull-up", targetReps: "8-10" },
+              sets: 4, 
+              notes: "Density superset: 60s rest between pairs.",
+              alternativesA: ["Barbell Incline Press", "Dips"],
+              alternativesB: ["Chin-ups", "Lat Pulldowns"]
+            },
+            { name: "Single-Arm Landmine Row", sets: 3, targetReps: "10/side", notes: "Square shoulders, pull deep into lat.", alternatives: ["Meadows Row", "Single Arm Cable Row"] },
+            { name: "Dips to Decline Push-up Finisher", sets: 3, targetReps: "10 + AMRAP", notes: "10 dips then immediately drop to floor push-ups.", alternatives: ["Push-up Pyramid", "Cable Fly Burnout"] },
+            { name: "EZ-Bar Hammer Curls", sets: 3, targetReps: "12", notes: "Focus on brachialis and forearm grip.", alternatives: ["DB Hammer Curls", "Reverse Grip Barbell Curls"] },
+            { name: "Loaded Carry / Sled Push Complex", sets: 4, targetReps: "60 seconds", notes: "Continuous work capacity output.", alternatives: ["Farmer's Walk 100 paces", "Heavy KB March in Place"] }
+          ]
+        },
+        {
+          label: "Functional Hinge & Engine",
+          warmup: ["Inchworm to Spiderman (6 reps)", "Banded monster walks (15 each way)", "Light KB cleans (2 × 6)", "Hollow rocks (3 × 20s)"],
+          exercises: [
+            { name: "Trap Bar / Sumo Deadlift", sets: 4, targetReps: "6", notes: "Functional ground-force production.", alternatives: ["Conventional Deadlift", "Clean Pulls"] },
+            { name: "Single-Leg DB Romanian Deadlift", sets: 3, targetReps: "8/side", notes: "Hinge on standing leg; hips stay square.", alternatives: ["Kickstand RDL", "Cable Single Leg Hinge"] },
+            { name: "Landmine Rotational Slams", sets: 3, targetReps: "12/side", notes: "High velocity rotational power transfer.", alternatives: ["Medicine Ball Rotational Slams", "Cable Woodchoppers"] },
+            { name: "Heavy Farmer's Walk", sets: 4, targetReps: "60 paces", notes: "Bodyweight equivalent total load.", alternatives: ["Trap Bar Carry", "Single-Arm Suitcase Carry"] }
+          ]
+        }
+      ],
+
+      // Rotation B: Athletic Agility, Anti-Rotation & Balance
+      B: [
+        {
+          label: "Athletic Upper & Overhead Mobility",
+          warmup: ["PVC pass-throughs + Overhead squats (15)", "Prone trap raises (10)", "Medicine ball chest pass (2 × 8)", "Dead hang with scapular pulls (45s)"],
+          exercises: [
+            { name: "Strict Military Press", sets: 4, targetReps: "6-8", notes: "Solid foundation; head through at top.", alternatives: ["DB Overhead Press", "Kettlebell Clean & Press"] },
+            { name: "Wide Grip Pull-ups", sets: 4, targetReps: "6-8", notes: "Controlled cadence (2s up, 2s down).", alternatives: ["Neutral Grip Pull-ups", "Lat Pulldown"] },
+            { name: "Half-Kneeling Landmine Press", sets: 3, targetReps: "8/side", notes: "Knee down on working side; deep core brace.", alternatives: ["Single-Arm Dumbbell Push Press", "Z-Press"] },
+            { name: "Incline Chest Supported Row", sets: 3, targetReps: "10", notes: "Pull with elbows high to target upper back.", alternatives: ["Seal Row", "Bent Over DB Row"] },
+            { name: "Ring / Bar Dips", sets: 3, targetReps: "8-10", notes: "Control stabilization at bottom.", alternatives: ["Weighted Push-ups", "Deficit Push-ups"] }
+          ]
+        },
+        {
+          label: "Unilateral Power & Hip Stability",
+          warmup: ["Band hip distractions (60s/hip)", "Lateral band walks (20 paces)", "Ankle circles & deep squat prying", "Single leg balance bounds (6/side)"],
+          exercises: [
+            { name: "Front-Rack Reverse Lunges", sets: 4, targetReps: "8/side", notes: "Kettlebells or barbell in front rack.", alternatives: ["Bulgarian Split Squats", "Step-ups"] },
+            { name: "Double KB Swings", sets: 4, targetReps: "12", notes: "Explosive posterior chain power.", alternatives: ["Single-Arm KB Swings", "Snatch High Pulls"] },
+            { name: "Deficit Push-ups with Feet on Bench", sets: 3, targetReps: "12", notes: "Deep functional range for chest/shoulders.", alternatives: ["Decline Push-ups", "Ring Push-ups"] },
+            { name: "Overhead Dumbbell Carry", sets: 3, targetReps: "40 paces/side", notes: "Single arm locked overhead; pack shoulder.", alternatives: ["Waiter's Carry", "Farmer's Carry"] },
+            { name: "Hyperextensions with Rotational Hold", sets: 3, targetReps: "10/side", notes: "Hold apex, rotate shoulders gently 15° each side.", alternatives: ["Bird-dogs with Hold", "Superman Holds"] }
+          ]
+        },
+        {
+          label: "Upper Volume & Core Anti-Flexion",
+          warmup: ["Shoulder dislocates with light band", "Yoga flow (down dog to cobra, 8 cycles)", "Push-up to side plank (6/side)", "Arm circles"],
+          exercises: [
+            { name: "DB Incline Bench Press", sets: 4, targetReps: "8", notes: "Keep elbows at 45 degrees.", alternatives: ["Landmine Floor Press", "Barbell Incline Press"] },
+            { name: "Meadows Row", sets: 3, targetReps: "10/side", notes: "Landmine lateral row targeting lat fibers.", alternatives: ["Single Arm DB Row", "Barbell Row"] },
+            { name: "Face Pulls with External Rotation", sets: 4, targetReps: "15", notes: "Two-step motion: pull then rotate fists back.", alternatives: ["Band Pull-aparts", "Rear Delt Flyes"] },
+            { name: "Landmine 180 Twists", sets: 3, targetReps: "10/side", notes: "Control the arc down to hip, explode over top.", alternatives: ["Russian Twists", "Cable Chops"] },
+            { name: "Hanging Leg Raises", sets: 3, targetReps: "12", notes: "Raise toes to the bar with minimum swing.", alternatives: ["Captain's Chair Knee Raise", "Ab Wheel"] }
+          ]
+        },
+        {
+          label: "Posterior Chain Power & Sprint Capacity",
+          warmup: ["Inchworms (6 reps)", "Glute bridges with band (2 × 15)", "Cossack squats (6/side)", "Kettlebell deadlifts (light, 10 reps)"],
+          exercises: [
+            { name: "Barbell Romanian Deadlift (RDL)", sets: 4, targetReps: "8", notes: "Hinge until maximum hamstring stretch, snap hips up.", alternatives: ["Trap Bar Deadlift", "Deficit Deadlift"] },
+            { name: "Goblet Squats with 3s Pause", sets: 3, targetReps: "10", notes: "Pause 3 full seconds in the hole before standing.", alternatives: ["Box Squats", "Front Squats"] },
+            { name: "Heavy Farmer's Carry", sets: 4, targetReps: "50 paces", notes: "Walk with high cadence and controlled core.", alternatives: ["Suitcase Carry", "Trap Bar Carry"] },
+            { name: "Lying Leg Curls", sets: 3, targetReps: "12", notes: "Eccentric tempo: 3 seconds down.", alternatives: ["Hamstring Sliders", "Nordic Curls"] }
+          ]
+        }
+      ],
+
+      // Rotation C: Density Complexes & Full Body Conditioning
+      C: [
+        {
+          label: "Complex Upper Body & Power",
+          warmup: ["Band pull-aparts (2 × 20)", "World's greatest stretch (5/side)", "Medicine ball slams (10 reps)", "Dead hang (45s)"],
+          exercises: [
+            { name: "Neutral Grip Weighted Pull-ups", sets: 4, targetReps: "6", notes: "Heavy compound vertical pull.", alternatives: ["Chin-ups", "Lat Pulldown"] },
+            { name: "Push Press", sets: 4, targetReps: "5", notes: "Dip 2-3 inches with knees and drive overhead.", alternatives: ["Strict Military Press", "DB Overhead Press"] },
+            { name: "Chest Supported T-Bar Row", sets: 3, targetReps: "10", notes: "Eliminate lower back momentum.", alternatives: ["Incline DB Row", "Barbell Row"] },
+            { name: "Dips to Failure", sets: 3, targetReps: "AMRAP", notes: "Aim to beat previous max rep count.", alternatives: ["Push-ups to Failure", "Cable Pressdowns"] },
+            { name: "Lateral Raises (Drop Set)", sets: 3, targetReps: "10 + 10", notes: "10 heavy reps, drop 30% weight, 10 more reps.", alternatives: ["Cable Lateral Raises", "DB Y-Raises"] }
+          ]
+        },
+        {
+          label: "Complex Lower & Unilateral Agility",
+          warmup: ["Hip airplanes (6/side)", "Ankle rocks (10/side)", "Deep squat hold (60s)", "Glute kickbacks (15/side)"],
+          exercises: [
+            { name: "Bulgarian Split Squats (Heavy)", sets: 4, targetReps: "6/side", notes: "Focus on explosive drive upward.", alternatives: ["Reverse Lunges", "Front Squats"] },
+            { name: "Kettlebell Snatch or Clean", sets: 4, targetReps: "8/side", notes: "Hinge and snap; lock out cleanly overhead.", alternatives: ["KB Swings", "Dumbbell Snatch"] },
+            { name: "Nordic / GHD Hamstring Curls", sets: 3, targetReps: "8", notes: "Fight the descent with hamstrings.", alternatives: ["Leg Curls", "Slider Curls"] },
+            { name: "Suitcase Carry", sets: 4, targetReps: "40 paces/side", notes: "Anti-lateral flexion for obliques.", alternatives: ["Farmer's Walk", "Overhead Carry"] },
+            { name: "Landmine Rotations", sets: 3, targetReps: "12/side", notes: "Drive power from hips through the hands.", alternatives: ["Cable Woodchops", "Plank Twists"] }
+          ]
+        },
+        {
+          label: "Conditioning & Density Supersets",
+          warmup: ["Bear crawls (30 paces)", "Band face pulls (20 reps)", "Push-up to pike (8 reps)", "Jump rope (60s)"],
+          exercises: [
+            { 
+              isSuperset: true,
+              name: "Incline DB Bench + Single Arm Row",
+              moveA: { name: "Incline DB Bench", targetReps: "10" },
+              moveB: { name: "Single Arm DB Row", targetReps: "10/side" },
+              sets: 4, 
+              notes: "Superset: Complete bench reps then immediately row. Rest 60s.",
+              alternativesA: ["Barbell Incline Bench", "Dips"],
+              alternativesB: ["T-Bar Row", "Meadows Row"]
+            },
+            { name: "Decline Push-ups", sets: 3, targetReps: "15", notes: "Elevate feet on 20\" box.", alternatives: ["Push-ups", "Dips"] },
+            { name: "EZ-Bar Curls (Strict)", sets: 3, targetReps: "12", notes: "Keep elbows glued to ribs.", alternatives: ["Incline DB Curls", "Hammer Curls"] },
+            { name: "Loaded Sled or Heavy March", sets: 4, targetReps: "60 seconds", notes: "High heart rate functional conditioning.", alternatives: ["Farmer's Walk 60 paces", "High Knees in Place"] }
+          ]
+        },
+        {
+          label: "Functional Hinge & Total Body Armor",
+          warmup: ["Inchworms (6 reps)", "Banded good mornings (15)", "Cossack squats (6/side)", "Bird-dogs (8/side)"],
+          exercises: [
+            { name: "Trap Bar Deadlift (High Velocity)", sets: 4, targetReps: "6", notes: "Explosive concentric speed.", alternatives: ["Conventional Deadlift", "Sumo Deadlift"] },
+            { name: "Single Leg DB RDL", sets: 3, targetReps: "8/side", notes: "Focus on balance and glute engagement.", alternatives: ["Kickstand RDL", "Cable Pull Through"] },
+            { name: "Heavy Barbell / DB Shrugs", sets: 3, targetReps: "12", notes: "2-second contraction at apex.", alternatives: ["Trap Bar Shrugs", "Kelso Shrugs"] },
+            { name: "Goblet Squats", sets: 3, targetReps: "12", notes: "Torso vertical, hips open.", alternatives: ["Front Squats", "Safety Bar Squat"] }
+          ]
+        }
+      ],
+
+      // Functional Deload Week (Weeks 27, 31, 35, 40)
+      Deload: [
+        {
+          label: "Functional Recovery & Mobility A",
+          warmup: ["Dead hangs (60s)", "Thoracic foam roll passes", "Band pull-aparts (2 × 20)", "World's greatest stretch (5/side)"],
+          exercises: [
+            { name: "Dynamic / Weighted Pull-ups", sets: 2, targetReps: "5 bodyweight reps", notes: "Clean, crisp movement at RPE 6.", alternatives: ["Lat Pulldown"] },
+            { name: "Half-Kneeling Landmine Press", sets: 2, targetReps: "8/side", notes: "Light load, focus on shoulder alignment.", alternatives: ["Light DB Press"] },
+            { name: "Hanging Knee/Toes to Bar", sets: 2, targetReps: "8", notes: "Smooth, unhurried reps.", alternatives: ["Plank Hold 45s"] }
+          ]
+        },
+        {
+          label: "Functional Recovery & Mobility B",
+          warmup: ["90/90 Hip flow (2 mins)", "Deep squat ankle stretch", "Glute bridges (15 reps)", "Bird-dogs (8/side)"],
+          exercises: [
+            { name: "Goblet Squats", sets: 2, targetReps: "8", notes: "Restorative mobility.", alternatives: ["Air Squats"] },
+            { name: "Single-Leg DB Romanian Deadlift", sets: 2, targetReps: "6/side", notes: "Light dumbbell, balance focus.", alternatives: ["Bodyweight RDL"] },
+            { name: "Suitcase Carries (Single Arm)", sets: 2, targetReps: "30 paces/side", notes: "Light weight, posture emphasis.", alternatives: ["Farmer's Walk"] }
+          ]
+        },
+        {
+          label: "Functional Recovery & Mobility C",
+          warmup: ["Cat-Cow into Child's Pose (10 cycles)", "Band YTWLs", "Downward dog (60s)", "Light jumping jacks"],
+          exercises: [
+            { name: "DB Incline Bench Press", sets: 2, targetReps: "8", notes: "50% working load.", alternatives: ["Push-ups"] },
+            { name: "Face Pulls with External Rotation", sets: 2, targetReps: "12", notes: "Postural reset.", alternatives: ["Band Pull-aparts"] }
+          ]
+        },
+        {
+          label: "Functional Recovery & Mobility D",
+          warmup: ["Hamstring sweeps", "Banded good mornings", "Dead hang decompress (60s)", "Hip flexor lunge stretch"],
+          exercises: [
+            { name: "Trap Bar / Sumo Deadlift", sets: 2, targetReps: "5", notes: "50-60% normal weight.", alternatives: ["Kettlebell Deadlift"] },
+            { name: "Moderate Farmer's Carry", sets: 2, targetReps: "40 paces", notes: "Smooth walking pace.", alternatives: ["Suitcase Carry"] }
+          ]
+        }
+      ]
+    };
+
+    const TOTAL_WEEKS = 40;
+    let currentWeek = 1;
+    let currentDay = 0;
+    let workoutLogs = JSON.parse(localStorage.getItem('apex_logs') || '{}');
+
+    // Standalone & iOS detection
+    const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+    function checkStandaloneUI() {
+      const installBtn = document.getElementById('pwa-install-btn');
+      if (isStandalone) {
+        installBtn.innerHTML = `<span>✓</span> <span>Installed</span>`;
+        installBtn.classList.remove('bg-amber-400/10', 'text-amber-400', 'border-amber-400/30');
+        installBtn.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30');
+        installBtn.onclick = null;
+      }
+    }
+
+    function openInstallModal() {
+      document.getElementById('ios-modal').classList.remove('hidden');
+    }
+
+    function closeInstallModal(e) {
+      document.getElementById('ios-modal').classList.add('hidden');
+    }
+
+    function getWeekMeta(week) {
+      const isPhase2 = week > 23;
+      const phaseNum = isPhase2 ? 2 : 1;
+      const effectiveWeek = isPhase2 ? (week - 23) : week;
+      const cycle = Math.ceil(effectiveWeek / 4);
+      const posInCycle = ((effectiveWeek - 1) % 4) + 1;
+
+      let rotationKey = "A";
+      let rotationName = "Rotation A";
+      let targetRpe = 8;
+      let typeDesc = "Volume Accumulation";
+
+      if (posInCycle === 4) {
+        rotationKey = "Deload";
+        rotationName = "Deload & Recovery";
+        targetRpe = 6;
+        typeDesc = "Active Deload (Joint Recovery)";
+      } else if (posInCycle === 1) {
+        rotationKey = "A";
+        rotationName = "Rotation A (Hypertrophy & Supersets)";
+        targetRpe = (week === 1) ? 7 : 7.5;
+        typeDesc = (week === 1) ? "Baseline Setting" : "Volume Accumulation";
+      } else if (posInCycle === 2) {
+        rotationKey = "B";
+        rotationName = "Rotation B (Heavy Strength & Low Reps)";
+        targetRpe = 8.5;
+        typeDesc = "Load Progression";
+      } else if (posInCycle === 3) {
+        rotationKey = "C";
+        rotationName = "Rotation C (Density & Unilateral)";
+        targetRpe = 9;
+        typeDesc = "Peak Overload";
+      }
+
+      const phaseName = isPhase2 
+        ? "Phase 2: Functional (Mar '27 - Jun '27)" 
+        : "Phase 1: Overload (Sep '26 - Feb '27)";
+
+      return {
+        phase: phaseNum,
+        phaseName,
+        cycle,
+        posInCycle,
+        rotationKey,
+        rotationName,
+        targetRpe,
+        typeDesc
+      };
+    }
+
+    // Historical scan backward across all weeks: finds either regular exercises or superset components
+    function findLastLoggedExercise(exName, fromWeek) {
+      for (let w = fromWeek - 1; w >= 1; w--) {
+        for (let d = 0; d < 4; d++) {
+          const key = `w${w}_d${d}`;
+          const dayLog = workoutLogs[key];
+          if (dayLog && dayLog.exercises) {
+            // Check direct standard match
+            if (dayLog.exercises[exName] && dayLog.exercises[exName].sets && !dayLog.exercises[exName].isSuperset) {
+              const entry = dayLog.exercises[exName];
+              if (entry.sets.length > 0 && entry.sets[0].weight !== '') {
+                return { week: w, day: d, sets: entry.sets };
+              }
+            }
+            // Check inside logged supersets
+            for (const k in dayLog.exercises) {
+              const item = dayLog.exercises[k];
+              if (item && item.isSuperset && item.sets && item.sets.length > 0) {
+                const s0 = item.sets[0];
+                if (s0.moveAName === exName && s0.weightA !== '') {
+                  return { 
+                    week: w, 
+                    day: d, 
+                    sets: item.sets.map(s => ({ weight: s.weightA, reps: s.repsA, rpe: s.rpe })) 
+                  };
+                } else if (s0.moveBName === exName && s0.weightB !== '') {
+                  return { 
+                    week: w, 
+                    day: d, 
+                    sets: item.sets.map(s => ({ weight: s.weightB, reps: s.repsB, rpe: s.rpe })) 
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+      return null;
+    }
+
+    function init() {
+      checkStandaloneUI();
+      renderWeekSelector();
+      switchDay(0);
+      updateAdherence();
+      setupTimer();
+    }
+
+    function renderWeekSelector() {
+      const container = document.getElementById('week-selector');
+      container.innerHTML = '';
+      for (let w = 1; w <= TOTAL_WEEKS; w++) {
+        const btn = document.createElement('button');
+        const isPhase2 = w > 23;
+        const meta = getWeekMeta(w);
+        const isDeload = meta.rotationKey === "Deload";
+
+        btn.innerText = `W${w}${isDeload ? '·D' : ''}`;
+        btn.className = `flex-shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+          w === currentWeek 
+            ? 'bg-amber-400 text-slate-950 border-amber-400 font-black shadow-md shadow-amber-400/20' 
+            : isDeload
+              ? 'bg-slate-900/60 text-emerald-400 border-emerald-900/50 hover:border-emerald-600'
+              : isPhase2
+                ? 'bg-slate-900 text-sky-400 border-sky-900/60 hover:border-sky-500'
+                : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700'
+        }`;
+        btn.onclick = () => { 
+          currentWeek = w; 
+          renderWeekSelector(); 
+          renderWorkout(); 
+          updateAdherence(); 
+        };
+        container.appendChild(btn);
+      }
+    }
+
+    function switchDay(dayIdx) {
+      currentDay = dayIdx;
+      document.querySelectorAll('.day-tab').forEach((el, idx) => {
+        if (idx === dayIdx) {
+          el.classList.add('bg-amber-400', 'text-slate-950');
+          el.classList.remove('text-slate-400', 'bg-transparent');
+          el.querySelector('span').classList.remove('text-slate-400');
+          el.querySelector('span').classList.add('text-slate-900', 'font-semibold');
+        } else {
+          el.classList.remove('bg-amber-400', 'text-slate-950');
+          el.classList.add('text-slate-400', 'bg-transparent');
+          el.querySelector('span').classList.add('text-slate-400');
+          el.querySelector('span').classList.remove('text-slate-900', 'font-semibold');
+        }
+      });
+      renderWorkout();
+    }
+
+    function getLogKey(week, day) {
+      return `w${week}_d${day}`;
+    }
+
+    function swapStandardExercise(targetIndex) {
+      const meta = getWeekMeta(currentWeek);
+      const routineSet = (meta.phase === 2) ? PHASE_2_ROTATIONS : PHASE_1_ROTATIONS;
+      const dayData = routineSet[meta.rotationKey][currentDay];
+      const exObj = dayData.exercises[targetIndex];
+
+      if (!exObj || !exObj.alternatives || exObj.alternatives.length === 0) return;
+      const currentName = exObj.name;
+      const nextName = exObj.alternatives[0];
+
+      exObj.alternatives.shift();
+      exObj.alternatives.push(currentName);
+      exObj.name = nextName;
+      renderWorkout();
+    }
+
+    function swapSupersetComponent(targetIndex, part) {
+      const meta = getWeekMeta(currentWeek);
+      const routineSet = (meta.phase === 2) ? PHASE_2_ROTATIONS : PHASE_1_ROTATIONS;
+      const dayData = routineSet[meta.rotationKey][currentDay];
+      const exObj = dayData.exercises[targetIndex];
+
+      if (!exObj || !exObj.isSuperset) return;
+
+      if (part === 'A' && exObj.alternativesA && exObj.alternativesA.length > 0) {
+        const curA = exObj.moveA.name;
+        const nextA = exObj.alternativesA[0];
+        exObj.alternativesA.shift();
+        exObj.alternativesA.push(curA);
+        exObj.moveA.name = nextA;
+      } else if (part === 'B' && exObj.alternativesB && exObj.alternativesB.length > 0) {
+        const curB = exObj.moveB.name;
+        const nextB = exObj.alternativesB[0];
+        exObj.alternativesB.shift();
+        exObj.alternativesB.push(curB);
+        exObj.moveB.name = nextB;
+      }
+      exObj.name = `${exObj.moveA.name} + ${exObj.moveB.name}`;
+      renderWorkout();
+    }
+
+    // Helper: Formulates overload recommendation for any specific lift name
+    function getOverloadRecommendation(liftName, isPhase2, meta) {
+      const lastRec = findLastLoggedExercise(liftName, currentWeek);
+      if (meta.rotationKey === 'Deload') {
+        return "Deload: Use ~60% load @ RPE 6.";
+      }
+      if (!lastRec || !lastRec.sets || !lastRec.sets[0] || lastRec.sets[0].weight === '') {
+        return "Baseline: Establish first benchmark @ Target RPE.";
+      }
+      const avgW = lastRec.sets.reduce((acc, s) => acc + (parseFloat(s.weight) || 0), 0) / lastRec.sets.length;
+      const avgRpe = lastRec.sets.reduce((acc, s) => acc + (parseFloat(s.rpe) || 7), 0) / lastRec.sets.length;
+      const roundedW = Math.round(avgW * 10) / 10;
+
+      if (isPhase2) {
+        return `Capacity Target: Match or exceed ${roundedW} lbs (Wk ${lastRec.week}) with faster pace.`;
+      } else {
+        if (avgRpe <= meta.targetRpe) {
+          const bump = roundedW >= 135 ? 5 : 2.5;
+          return `Overload: +${bump} lbs or +1 rep over Wk ${lastRec.week} benchmark (${roundedW} lbs @ RPE ${avgRpe}).`;
+        } else {
+          return `Benchmark: ${roundedW} lbs in Wk ${lastRec.week} (RPE ${avgRpe}). Maintain weight to lower RPE.`;
+        }
+      }
+    }
+
+    function renderWorkout() {
+      const meta = getWeekMeta(currentWeek);
+      const isPhase2 = meta.phase === 2;
+      const routineSet = isPhase2 ? PHASE_2_ROTATIONS : PHASE_1_ROTATIONS;
+      const rotationDays = routineSet[meta.rotationKey];
+      const dayData = rotationDays[currentDay];
+
+      // Update Phase Badge & Header Labels
+      const phasePill = document.getElementById('phase-pill');
+      phasePill.innerText = isPhase2 ? 'Phase 2: Functional' : 'Phase 1: Overload';
+      phasePill.className = isPhase2 
+        ? 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-400/20 text-sky-400 border border-sky-400/30'
+        : 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-400 border border-amber-400/30';
+
+      document.getElementById('cycle-label').innerText = `Meso ${meta.cycle} • Week ${currentWeek} (${meta.rotationName})`;
+      document.getElementById('phase-timeline-text').innerText = meta.phaseName;
+      document.getElementById('target-rpe-badge').innerText = `Target RPE: ${meta.targetRpe} ${meta.rotationKey === 'Deload' ? '(Deload)' : ''}`;
+
+      // Update 4-Day Tab Subtitles
+      for (let d = 0; d < 4; d++) {
+        const sub = document.getElementById(`day-tab-${d}`);
+        if (rotationDays[d]) {
+          sub.innerText = rotationDays[d].label.split('(')[0].trim();
+        }
+      }
+
+      // Timeline month calculation
+      const monthBadge = document.getElementById('month-badge');
+      if (currentWeek <= 5) monthBadge.innerText = "Sep - Oct 2026";
+      else if (currentWeek <= 10) monthBadge.innerText = "Nov 2026";
+      else if (currentWeek <= 15) monthBadge.innerText = "Dec 2026";
+      else if (currentWeek <= 19) monthBadge.innerText = "Jan 2027";
+      else if (currentWeek <= 23) monthBadge.innerText = "Feb 2027 (Overload Finale)";
+      else if (currentWeek <= 27) monthBadge.innerText = "Mar 2027 (Functional Start)";
+      else if (currentWeek <= 31) monthBadge.innerText = "Apr 2027";
+      else if (currentWeek <= 35) monthBadge.innerText = "May 2027";
+      else monthBadge.innerText = "Jun 2027 (Functional Finale)";
+
+      // Warm-up Checklist
+      document.getElementById('warmup-title').innerText = `${dayData.label.split('(')[0]} Warm-Up`;
+      const warmupList = document.getElementById('warmup-list');
+      warmupList.innerHTML = dayData.warmup.map(item => `
+        <label class="flex items-start gap-2.5 cursor-pointer select-none">
+          <input type="checkbox" class="mt-0.5 rounded border-slate-700 text-amber-400 focus:ring-0 bg-slate-950">
+          <span class="text-[11px] leading-tight text-slate-300">${item}</span>
+        </label>
+      `).join('');
+
+      // Fetch Saved Day Log
+      const key = getLogKey(currentWeek, currentDay);
+      const savedDay = workoutLogs[key] || { exercises: {}, completed: false };
+
+      const container = document.getElementById('workout-container');
+      container.innerHTML = '';
+
+      dayData.exercises.forEach((ex, exIdx) => {
+
+        // ==========================================
+        // 1. DEDICATED SUPERSET RENDERING
+        // ==========================================
+        if (ex.isSuperset) {
+          const exCard = document.createElement('div');
+          exCard.className = "bg-slate-900 border border-amber-400/30 rounded-2xl p-4 space-y-3.5 shadow-lg shadow-amber-400/5";
+
+          const directiveA = getOverloadRecommendation(ex.moveA.name, isPhase2, meta);
+          const directiveB = getOverloadRecommendation(ex.moveB.name, isPhase2, meta);
+
+          const swapBtnA = (ex.alternativesA && ex.alternativesA.length > 0)
+            ? `<button onclick="swapSupersetComponent(${exIdx}, 'A')" class="text-[9px] text-amber-400 hover:text-amber-300 bg-amber-400/10 border border-amber-400/20 px-1.5 py-0.5 rounded">⇄ Swap</button>`
+            : '';
+          const swapBtnB = (ex.alternativesB && ex.alternativesB.length > 0)
+            ? `<button onclick="swapSupersetComponent(${exIdx}, 'B')" class="text-[9px] text-amber-400 hover:text-amber-300 bg-amber-400/10 border border-amber-400/20 px-1.5 py-0.5 rounded">⇄ Swap</button>`
+            : '';
+
+          // Build Set Rows for Superset
+          let supersetRows = '';
+          for (let s = 1; s <= ex.sets; s++) {
+            const savedSet = (savedDay.exercises[ex.name] && savedDay.exercises[ex.name].sets && savedDay.exercises[ex.name].sets[s - 1])
+              ? savedDay.exercises[ex.name].sets[s - 1]
+              : { weightA: '', repsA: '', weightB: '', repsB: '', rpe: '' };
+
+            supersetRows += `
+              <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800/80 space-y-2.5">
+                <div class="flex items-center justify-between border-b border-slate-800/70 pb-1.5">
+                  <span class="text-xs font-black text-amber-400 tracking-wider">SET ${s}</span>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] text-slate-400 uppercase font-bold">Superset RPE</span>
+                    <input type="number" step="0.5" min="5" max="10" placeholder="RPE" value="${savedSet.rpe}" 
+                      onchange="saveSupersetSetData('${ex.name}', ${s - 1}, 'rpe', this.value, '${ex.moveA.name}', '${ex.moveB.name}')"
+                      class="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-amber-400 focus:border-amber-400 outline-none text-xs">
+                  </div>
+                </div>
+
+                <!-- Movement A Input -->
+                <div class="grid grid-cols-12 gap-2 items-center text-xs">
+                  <div class="col-span-5 min-w-0">
+                    <span class="font-bold text-slate-200 block truncate text-[11px]" title="${ex.moveA.name}">1. ${ex.moveA.name}</span>
+                  </div>
+                  <div class="col-span-4 flex items-center bg-slate-900 rounded-lg border border-slate-800 px-2 py-1.5 focus-within:border-amber-400">
+                    <input type="number" step="any" placeholder="lbs" value="${savedSet.weightA}"
+                      onchange="saveSupersetSetData('${ex.name}', ${s - 1}, 'weightA', this.value, '${ex.moveA.name}', '${ex.moveB.name}')"
+                      class="w-full bg-transparent text-center text-slate-100 outline-none text-xs">
+                    <span class="text-[10px] text-slate-500 font-mono">lbs</span>
+                  </div>
+                  <div class="col-span-3 flex items-center bg-slate-900 rounded-lg border border-slate-800 px-2 py-1.5 focus-within:border-amber-400">
+                    <input type="text" placeholder="${ex.moveA.targetReps}" value="${savedSet.repsA}"
+                      onchange="saveSupersetSetData('${ex.name}', ${s - 1}, 'repsA', this.value, '${ex.moveA.name}', '${ex.moveB.name}')"
+                      class="w-full bg-transparent text-center text-slate-100 outline-none text-xs">
+                    <span class="text-[10px] text-slate-500 font-mono">reps</span>
+                  </div>
+                </div>
+
+                <!-- Movement B Input -->
+                <div class="grid grid-cols-12 gap-2 items-center text-xs">
+                  <div class="col-span-5 min-w-0">
+                    <span class="font-bold text-slate-200 block truncate text-[11px]" title="${ex.moveB.name}">2. ${ex.moveB.name}</span>
+                  </div>
+                  <div class="col-span-4 flex items-center bg-slate-900 rounded-lg border border-slate-800 px-2 py-1.5 focus-within:border-amber-400">
+                    <input type="number" step="any" placeholder="lbs" value="${savedSet.weightB}"
+                      onchange="saveSupersetSetData('${ex.name}', ${s - 1}, 'weightB', this.value, '${ex.moveA.name}', '${ex.moveB.name}')"
+                      class="w-full bg-transparent text-center text-slate-100 outline-none text-xs">
+                    <span class="text-[10px] text-slate-500 font-mono">lbs</span>
+                  </div>
+                  <div class="col-span-3 flex items-center bg-slate-900 rounded-lg border border-slate-800 px-2 py-1.5 focus-within:border-amber-400">
+                    <input type="text" placeholder="${ex.moveB.targetReps}" value="${savedSet.repsB}"
+                      onchange="saveSupersetSetData('${ex.name}', ${s - 1}, 'repsB', this.value, '${ex.moveA.name}', '${ex.moveB.name}')"
+                      class="w-full bg-transparent text-center text-slate-100 outline-none text-xs">
+                    <span class="text-[10px] text-slate-500 font-mono">reps</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          exCard.innerHTML = `
+            <div class="flex justify-between items-start gap-2">
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-[9px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded">SUPERSET</span>
+                  <h3 class="font-bold text-slate-100 text-sm">${ex.name}</h3>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">${ex.notes}</p>
+                <div class="flex items-center gap-3 mt-1.5">
+                  <div class="flex items-center gap-1">
+                    <span class="text-[10px] text-slate-400">1:</span>
+                    <span class="text-[10px] font-semibold text-slate-200">${ex.moveA.name}</span>
+                    ${swapBtnA}
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <span class="text-[10px] text-slate-400">2:</span>
+                    <span class="text-[10px] font-semibold text-slate-200">${ex.moveB.name}</span>
+                    ${swapBtnB}
+                  </div>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300 flex-shrink-0">${ex.sets} Sets</span>
+            </div>
+
+            <!-- Dual Directives -->
+            <div class="text-[11px] bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 space-y-1 font-medium">
+              <div class="text-amber-400 leading-tight">⚡ <strong>${ex.moveA.name}:</strong> ${directiveA}</div>
+              <div class="text-amber-300 leading-tight">⚡ <strong>${ex.moveB.name}:</strong> ${directiveB}</div>
+            </div>
+
+            <!-- Set Rows -->
+            <div class="space-y-2">
+              ${supersetRows}
+            </div>
+          `;
+          container.appendChild(exCard);
+
+        // ==========================================
+        // 2. STANDARD EXERCISE RENDERING
+        // ==========================================
+        } else {
+          const exCard = document.createElement('div');
+          exCard.className = "bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3";
+
+          const directive = getOverloadRecommendation(ex.name, isPhase2, meta);
+
+          let setsRows = '';
+          for (let s = 1; s <= ex.sets; s++) {
+            const savedSet = (savedDay.exercises[ex.name] && savedDay.exercises[ex.name].sets && savedDay.exercises[ex.name].sets[s - 1]) 
+              ? savedDay.exercises[ex.name].sets[s - 1] 
+              : { weight: '', reps: '', rpe: '' };
+
+            setsRows += `
+              <div class="grid grid-cols-4 gap-2 items-center text-xs">
+                <span class="font-bold text-slate-400">Set ${s}</span>
+                <input type="number" step="any" placeholder="lbs" value="${savedSet.weight}" 
+                  onchange="saveStandardSetData('${ex.name}', ${s - 1}, 'weight', this.value)"
+                  class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-center text-slate-100 focus:border-amber-400 outline-none">
+                <input type="text" placeholder="${ex.targetReps}" value="${savedSet.reps}" 
+                  onchange="saveStandardSetData('${ex.name}', ${s - 1}, 'reps', this.value)"
+                  class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-center text-slate-100 focus:border-amber-400 outline-none">
+                <input type="number" step="0.5" min="5" max="10" placeholder="RPE" value="${savedSet.rpe}" 
+                  onchange="saveStandardSetData('${ex.name}', ${s - 1}, 'rpe', this.value)"
+                  class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-center font-semibold text-amber-400 focus:border-amber-400 outline-none">
+              </div>
+            `;
+          }
+
+          const hasAlternatives = ex.alternatives && ex.alternatives.length > 0;
+          const swapButtonHtml = hasAlternatives 
+            ? `<button onclick="swapStandardExercise(${exIdx})" class="text-[10px] text-amber-400 hover:text-amber-300 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded flex items-center gap-1">
+                 <span>⇄ Swap</span>
+               </button>`
+            : '';
+
+          exCard.innerHTML = `
+            <div class="flex justify-between items-start gap-2">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-bold text-slate-100 text-sm">${ex.name}</h3>
+                  ${swapButtonHtml}
+                </div>
+                <p class="text-[11px] text-slate-400">${ex.notes}</p>
+              </div>
+              <span class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300 flex-shrink-0">${ex.sets} × ${ex.targetReps}</span>
+            </div>
+            <div class="text-[11px] bg-slate-950 p-2.5 rounded-lg border border-slate-800/60 ${isPhase2 ? 'text-sky-400' : 'text-amber-400'} font-medium">
+              ⚡ Overload Target: ${directive}
+            </div>
+            <div class="space-y-1.5">
+              <div class="grid grid-cols-4 gap-2 text-[10px] text-slate-500 uppercase font-bold text-center">
+                <span class="text-left">Set</span>
+                <span>Weight</span>
+                <span>Reps</span>
+                <span>RPE (1-10)</span>
+              </div>
+              ${setsRows}
+            </div>
+          `;
+          container.appendChild(exCard);
+        }
+      });
+
+      // Complete Button State
+      const compBtn = document.getElementById('complete-btn');
+      if (savedDay.completed) {
+        compBtn.innerText = "Completed ✓ (Tap to Reopen)";
+        compBtn.className = "w-full py-3.5 rounded-xl font-bold tracking-wide uppercase transition-all bg-slate-800 text-emerald-400 border border-emerald-500/40";
+      } else {
+        compBtn.innerText = "Mark Workout Complete";
+        compBtn.className = "w-full py-3.5 rounded-xl font-bold tracking-wide uppercase transition-all bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20";
+      }
+    }
+
+    // Save Standard Exercise Data
+    function saveStandardSetData(exName, setIdx, field, value) {
+      const key = getLogKey(currentWeek, currentDay);
+      if (!workoutLogs[key]) workoutLogs[key] = { exercises: {}, completed: false };
+      if (!workoutLogs[key].exercises[exName]) workoutLogs[key].exercises[exName] = { isSuperset: false, sets: [] };
+      if (!workoutLogs[key].exercises[exName].sets[setIdx]) {
+        workoutLogs[key].exercises[exName].sets[setIdx] = { weight: '', reps: '', rpe: '' };
+      }
+      workoutLogs[key].exercises[exName].sets[setIdx][field] = value;
+      localStorage.setItem('apex_logs', JSON.stringify(workoutLogs));
+    }
+
+    // Save Dedicated Superset Data with Dual Movements
+    function saveSupersetSetData(exName, setIdx, field, value, moveAName, moveBName) {
+      const key = getLogKey(currentWeek, currentDay);
+      if (!workoutLogs[key]) workoutLogs[key] = { exercises: {}, completed: false };
+      if (!workoutLogs[key].exercises[exName]) workoutLogs[key].exercises[exName] = { isSuperset: true, sets: [] };
+      if (!workoutLogs[key].exercises[exName].sets[setIdx]) {
+        workoutLogs[key].exercises[exName].sets[setIdx] = { 
+          weightA: '', repsA: '', 
+          weightB: '', repsB: '', 
+          rpe: '',
+          moveAName: moveAName,
+          moveBName: moveBName
+        };
+      }
+      workoutLogs[key].exercises[exName].sets[setIdx][field] = value;
+      workoutLogs[key].exercises[exName].sets[setIdx].moveAName = moveAName;
+      workoutLogs[key].exercises[exName].sets[setIdx].moveBName = moveBName;
+      localStorage.setItem('apex_logs', JSON.stringify(workoutLogs));
+    }
+
+    function toggleWorkoutComplete() {
+      const key = getLogKey(currentWeek, currentDay);
+      if (!workoutLogs[key]) workoutLogs[key] = { exercises: {}, completed: false };
+      workoutLogs[key].completed = !workoutLogs[key].completed;
+      localStorage.setItem('apex_logs', JSON.stringify(workoutLogs));
+      renderWorkout();
+      updateAdherence();
+    }
+
+    function updateAdherence() {
+      const totalPossible = TOTAL_WEEKS * 4;
+      let completedCount = 0;
+      Object.keys(workoutLogs).forEach(k => {
+        if (workoutLogs[k] && workoutLogs[k].completed) completedCount++;
+      });
+      const pct = Math.round((completedCount / totalPossible) * 100);
+      document.getElementById('adherence-pct').innerText = `${completedCount} / ${totalPossible} sessions (${pct}%)`;
+      document.getElementById('adherence-bar').style.width = `${pct}%`;
+    }
+
+    function resetCurrentDay() {
+      if (!confirm(`Clear logged data for this day?`)) return;
+      delete workoutLogs[getLogKey(currentWeek, currentDay)];
+      localStorage.setItem('apex_logs', JSON.stringify(workoutLogs));
+      renderWorkout();
+      updateAdherence();
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify(workoutLogs, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `apex_training_backup_w${currentWeek}.json`;
+      a.click();
+    }
+
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          workoutLogs = JSON.parse(evt.target.result);
+          localStorage.setItem('apex_logs', JSON.stringify(workoutLogs));
+          renderWorkout();
+          updateAdherence();
+          alert("Backup data successfully imported.");
+        } catch(err) {
+          alert("Failed to parse file.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Rest Timer Logic
+    let timerRunning = false;
+    let timerInterval = null;
+
+    function setupTimer() {
+      const btn = document.getElementById('timer-btn');
+      const disp = document.getElementById('timer-display');
+      btn.onclick = () => {
+        if (timerRunning) {
+          clearInterval(timerInterval);
+          timerRunning = false;
+          disp.innerText = "90s";
+          btn.classList.remove('text-amber-400');
+          btn.classList.add('text-emerald-400');
+        } else {
+          let left = 90;
+          timerRunning = true;
+          btn.classList.add('text-amber-400');
+          btn.classList.remove('text-emerald-400');
+          disp.innerText = `${left}s`;
+          timerInterval = setInterval(() => {
+            left--;
+            disp.innerText = `${left}s`;
+            if (left <= 0) {
+              clearInterval(timerInterval);
+              timerRunning = false;
+              disp.innerText = "Go!";
+              if (navigator.vibrate) navigator.vibrate([250, 100, 250]);
+              setTimeout(() => { 
+                disp.innerText = "90s"; 
+                btn.classList.remove('text-amber-400'); 
+                btn.classList.add('text-emerald-400'); 
+              }, 2500);
+            }
+          }, 1000);
+        }
+      };
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
